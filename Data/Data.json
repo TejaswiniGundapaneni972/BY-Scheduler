@@ -1,0 +1,36 @@
+{
+  "Module15": {
+    "EmailTemplates":{
+      "Phasewise": {
+        "body": "Hello Team,\n\nDR phase: {0} has been completed, you can proceed with the execution of next phase in the DR activity.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - DR Phase Status"
+      },
+      "FinalReport": {
+        "body": "Hello Team,\n\nDR activity has been successfully completed. Final reports are generated and uploaded at this SharePoint location: {0}, Filename: {1}.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - Final Report"
+      },
+      "LongRunningActivity": {
+        "body": "Hello Team,\n\nData Sync has been completed.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - Primary-to-DR DataSync / DR-to-Primary DataSync"
+      },
+      "Failure":{
+        "body": "Hello Team,\n\nAttention required, DR activity is failed at this phase: {0} and task : {1} with error message: {2}.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - Failure at this phase: {1}"
+      },
+      "Cancellation": {
+        "body": "Hello Team,\n\nDR activity has been cancelled, kindly check the updated DR schedule.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - DR Activity Cancelled"
+      },
+      "ReSchedule": {
+        "body": "Hello Team,\n\nDR activity has been rescheduled, kindly check the updated DR schedule.\n\nRegards,\nDR Automation Team.",
+        "Subject" : "{0} - DR Activity Rescheduled"
+      },
+      "FromEmailAddress": "Gundapaneni.Tejaswini@jda.com",
+      "ToEmailAddress": "Gundapaneni.Tejaswini@jda.com"
+    },
+    "SMTPServerDetails":{
+      "SMTPUsername": "hcl-by-poc-202202/DRProdAutomation",
+      "APIURL" : "https://api.outbound.us.mailhop.org/v1/send"
+    }
+  }
+}
