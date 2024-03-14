@@ -1,8 +1,7 @@
 name: Trigger_Email_Workflow
 
 on:
-  repository_dispatch:
-    types: [ Trigger_Email_Workflow ]
+  workflow_dispatch
 
 jobs:
   job1:
