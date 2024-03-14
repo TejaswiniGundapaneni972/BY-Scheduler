@@ -1,0 +1,20 @@
+name: Trigger_Email_Workflow
+
+on:
+  repository_dispatch:
+    types: [ Trigger_Email_Workflow ]
+
+jobs:
+  job1:
+    name: Trigger_Email
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3  # Download your repository code
+
+      - name: Run PowerShell script
+        shell: pwsh
+        run: |
+          ls
+          ./Modules/Module15.ps1  
+
