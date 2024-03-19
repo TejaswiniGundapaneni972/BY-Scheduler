@@ -34,4 +34,4 @@ jobs:
         run: |
           $InformationPreference = "Continue"
           Import-Module -FullyQualifiedName ./Modules/Module15.psm1 -Force
-          Send-Email -RunId ${{ inputs.RunId }} -EmailScenario ${{ inputs.EmailScenario }} -LogicAppName ${{ inputs.LogicAppName }} -ErrorMessage ${{ inputs.ErrorMessage }}
+          Send-Email -RunId '${{ inputs.RunId }}' -EmailScenario '${{ inputs.EmailScenario }}' -LogicAppName '${{ inputs.LogicAppName }}' -ErrorMessage '${{ inputs.ErrorMessage }}'
