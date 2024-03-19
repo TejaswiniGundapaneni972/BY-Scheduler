@@ -70,7 +70,6 @@ function Send-Email {
             $FromEmailAddress = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName "FromEmailAddress"
             $APIURL = Get-ValueFromJson -ModuleID "Reporting" -TaskID "SMTPServerDetails" -KeyName "APIURL"
             $EmailTemplate = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName $EmailScenario
-            $SMTPSecretName = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName $SMTPSecretName
         }
         catch {
             Write-Information -MessageData "Encountered Error while getting Data from Json within Module.`n" -InformationAction Continue
