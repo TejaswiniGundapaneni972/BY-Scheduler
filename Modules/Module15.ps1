@@ -4,7 +4,15 @@ function Send-Email {
     param (
 
         [Parameter(Mandatory = $True)]
-        [ValidateSet("Phasewise", "FinalReport", "LongRunningActivity", "Failure", "Cancellation", "ReSchedule")]
+        [ValidateNotNullOrEmpty()]
+        [guid]$KeyVaultSubscriptionID,
+
+        [Parameter(Mandatory = $True)]
+        [ValidateNotNullOrEmpty()]
+        [string]$KeyVaultName,
+
+        [Parameter(Mandatory = $True)]
+        [ValidateSet("Phasewise", "FinalReport", "LongRunningActivity", "Failure", "Cancellation", "ReSchedule", "Prerequisite", "LogicAppFailure")]
         [string]$EmailScenario,
 
         [Parameter(Mandatory = $false)]
@@ -29,7 +37,15 @@ function Send-Email {
 
         [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
-        [string]$TaskId
+        [string]$TaskId,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [string]$LogicAppName,
+
+        [Parameter(Mandatory = $false)]
+        [ValidateNotNullOrEmpty()]
+        [array]$PrerequisiteOpenTicketsObject
 
     )
 
@@ -49,11 +65,12 @@ function Send-Email {
         # Read Sharepoint credentials from the Data.json
         Write-Information -MessageData "Getting SMTP Creds and Email template Values from Data.json..."
         try {
-            $SMTPUsername = Get-ValueFromJson -ModuleID "Module15" -TaskID "SMTPServerDetails" -KeyName "SMTPUsername"
-            $ToEmailAddress = Get-ValueFromJson -ModuleID "Module15" -TaskID "EmailTemplates" -KeyName "ToEmailAddress"
-            $FromEmailAddress = Get-ValueFromJson -ModuleID "Module15" -TaskID "EmailTemplates" -KeyName "FromEmailAddress"
-            $APIURL = Get-ValueFromJson -ModuleID "Module15" -TaskID "SMTPServerDetails" -KeyName "APIURL"
-            $EmailTemplate = Get-ValueFromJson -ModuleID "Module15" -TaskID "EmailTemplates" -KeyName $EmailScenario
+            $SMTPUsername = Get-ValueFromJson -ModuleID "Reporting" -TaskID "SMTPServerDetails" -KeyName "SMTPUsername"
+            $ToEmailAddress = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName "ToEmailAddress"
+            $FromEmailAddress = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName "FromEmailAddress"
+            $APIURL = Get-ValueFromJson -ModuleID "Reporting" -TaskID "SMTPServerDetails" -KeyName "APIURL"
+            $EmailTemplate = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName $EmailScenario
+            $SMTPSecretName = Get-ValueFromJson -ModuleID "Reporting" -TaskID "EmailTemplates" -KeyName $SMTPSecretName
         }
         catch {
             Write-Information -MessageData "Encountered Error while getting Data from Json within Module.`n" -InformationAction Continue
@@ -74,9 +91,29 @@ function Send-Email {
             $EmailBody = $EmailTemplate.body
             $EmailSubject = $EmailTemplate.Subject -f $RunId
         }
-        elseif ($EmailScenario -eq "Failure") {
+        elseif (($EmailScenario -eq "Failure") -or ($EmailScenario -eq "GitHubWorkflowFailure")) {
             $EmailBody = $EmailTemplate.body -f $DRPhase, $TaskId, $ErrorMessage
             $EmailSubject = $EmailTemplate.Subject -f $RunId, $DRPhase
+        }
+        elseif ($EmailScenario -eq "Prerequisite") {
+
+            # Loop through all the tickets and create a formmatted string with ticket details
+            $OpenTicketDetails = ""
+            foreach ($Ticket in $PrerequisiteOpenTicketsObject) {
+                # Access individual properties
+                $ticketId = $Ticket.TicketID
+                $ticketDescription = $Ticket.TicketDescription
+
+                # Format the data using string concatenation
+                $OpenTicketDetails += "Ticket ID: $ticketId, Description: $ticketDescription\n"
+            }
+
+            $EmailBody = $EmailTemplate.body -f $OpenTicketDetails
+            $EmailSubject = $EmailTemplate.Subject -f $RunId
+        }
+        elseif ($EmailScenario -eq "LogicAppFailure") {
+            $EmailBody = $EmailTemplate.body -f $LogicAppName, $ErrorMessage
+            $EmailSubject = $EmailTemplate.Subject -f $RunId
         }
         else {
             $EmailBody = $EmailTemplate.body
@@ -89,12 +126,17 @@ function Send-Email {
         # Getting Secret Value from Azure Keyvault[SMTP Secret Value]
         Write-Information -MessageData "Getting Secret Value from Azure Keyvault[SMTP Secret Value]"
 
-        $SMTPPwd = "sk_nVDq4jqvtQs#nU+cJjcG-&XYdZup8tDUMumkK"
-      
+        try {
+            $SMTPPwd = Get-KeyVaultSecret -KeyVaultSubscriptionID $KeyVaultSubscriptionID -SecretName $SMTPSecretName -KeyVaultName $KeyVaultName -ErrorAction Stop
+        }
+        catch {
+            Write-Information -MessageData "Encountered Error while getting secret value from Azure Keyvault[SMTP Secret Value].`n" -InformationAction Continue
+            Write-Information -MessageData $($_.Exception | Out-String) -InformationAction Continue; Write-Information -MessageData $($_.InvocationInfo | Out-String) -InformationAction Continue; throw
+        }
 
         # Encode the credentials as Base64
         Write-Information -MessageData "Generating the token for authentication"
-        $base64AuthInfo = [System.Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $SMTPUsername, $SMTPPwd)))
+        $base64AuthInfo = [System.Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $SMTPUsername, $SMTPPwd[1])))
 
         # Define the headers with the Basic Auth token
         $headers = @{
@@ -207,8 +249,3 @@ function Get-ValueFromJson {
     }
 }
 
-
-$EmailScenario ="Phasewise"
-$RunId = "366b88da-3a5c-411c-8d39-1e8f78ef5a76"
-$DRPhase = "Failover"
-Send-Email -RunId $RunId -EmailScenario $EmailScenario -DRPhase $DRPhase
