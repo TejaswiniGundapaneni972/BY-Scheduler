@@ -3,11 +3,11 @@ function Send-Email {
     [OutputType([bool])]
     param (
 
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [guid]$KeyVaultSubscriptionID,
 
-        [Parameter(Mandatory = $True)]
+        [Parameter(Mandatory = $false)]
         [ValidateNotNullOrEmpty()]
         [string]$KeyVaultName,
 
