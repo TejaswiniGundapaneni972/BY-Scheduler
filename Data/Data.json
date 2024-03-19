@@ -42,7 +42,7 @@
         "Subject": "{0} - Failed to trigger the GitHub Workflow at this phase: {1}"
       },
       "LogicAppFailure": {
-        "body": "Hello Team,\n\nLogic App named {0} failed with this error message: {2}.\n\nRegards,\nDR Automation Team.",
+        "body": "Hello Team,\n\nLogic App named {0} failed with this error message: {1}.\n\nRegards,\nDR Automation Team.",
         "Subject": "{0} - Logic App Failure"
       },
       "FromEmailAddress": "Gundapaneni.Tejaswini@jda.com",
