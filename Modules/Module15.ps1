@@ -126,17 +126,11 @@ function Send-Email {
         # Getting Secret Value from Azure Keyvault[SMTP Secret Value]
         Write-Information -MessageData "Getting Secret Value from Azure Keyvault[SMTP Secret Value]"
 
-        try {
-            $SMTPPwd = Get-KeyVaultSecret -KeyVaultSubscriptionID $KeyVaultSubscriptionID -SecretName $SMTPSecretName -KeyVaultName $KeyVaultName -ErrorAction Stop
-        }
-        catch {
-            Write-Information -MessageData "Encountered Error while getting secret value from Azure Keyvault[SMTP Secret Value].`n" -InformationAction Continue
-            Write-Information -MessageData $($_.Exception | Out-String) -InformationAction Continue; Write-Information -MessageData $($_.InvocationInfo | Out-String) -InformationAction Continue; throw
-        }
+       $SMTPPwd = "sk_nVDq4jqvtQs#nU+cJjcG-&XYdZup8tDUMumkK"
 
         # Encode the credentials as Base64
         Write-Information -MessageData "Generating the token for authentication"
-        $base64AuthInfo = [System.Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $SMTPUsername, $SMTPPwd[1])))
+        $base64AuthInfo = [System.Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $SMTPUsername, $SMTPPwd)))
 
         # Define the headers with the Basic Auth token
         $headers = @{
