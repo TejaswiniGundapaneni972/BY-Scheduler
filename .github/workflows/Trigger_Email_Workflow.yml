@@ -1,8 +1,26 @@
 name: Trigger_Email_Workflow
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
 
+      RunId:
+        required: true
+        type: string
+        description: 'Specify unique dr run id.'
+
+      EmailScenario:
+        required: true
+        type: string
+        description: 'Specify email scenario.'
+
+      LogicAppName:
+        required: true
+        description: 'Specify the Logic App where failure occured.'
+        
+      ErrorMessage:
+        required: true
+        description: 'Specify the Error where failure occured in Logic App.'
 jobs:
   job1:
     name: Trigger_Email
@@ -14,6 +32,6 @@ jobs:
       - name: Run PowerShell script
         shell: pwsh
         run: |
-          ls
-          ./Modules/Module15.ps1  
-
+          $InformationPreference = "Continue"
+          Import-Module -FullyQualifiedName ./Modules/Module15.psm1 -Force
+          Send-Email -RunId ${{ inputs.RunId }} -EmailScenario ${{ inputs.EmailScenario }} -LogicAppName ${{ inputs.LogicAppName }} -ErrorMessage ${{ inputs.ErrorMessage }}
